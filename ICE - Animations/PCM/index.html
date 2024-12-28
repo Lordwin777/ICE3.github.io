@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse Code Modulation (PCM) Demonstration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 800px;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      background-color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .slider-container {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .slider-container label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .current-step {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Pulse Code Modulation (PCM) Demonstration</h2>
+    <canvas id="pcmCanvas" width="800" height="300"></canvas>
+    <div class="slider-container">
+      <label for="samplingRateSlider">Sampling Rate: <span id="samplingRateValue">10</span></label>
+      <input type="range" id="samplingRateSlider" min="5" max="50" step="1" value="10">
+    </div>
+    <div class="slider-container">
+      <label for="quantizationLevelsSlider">Quantization Levels: <span id="quantizationLevelsValue">8</span></label>
+      <input type="range" id="quantizationLevelsSlider" min="2" max="16" step="1" value="8">
+    </div>
+    <button id="nextStepButton">Next Step</button>
+    <div class="current-step">Current Step: <span id="currentStepText">Original Signal</span></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('pcmCanvas');
+    const ctx = canvas.getContext('2d');
+    const samplingRateSlider = document.getElementById('samplingRateSlider');
+    const quantizationLevelsSlider = document.getElementById('quantizationLevelsSlider');
+    const samplingRateValue = document.getElementById('samplingRateValue');
+    const quantizationLevelsValue = document.getElementById('quantizationLevelsValue');
+    const nextStepButton = document.getElementById('nextStepButton');
+    const currentStepText = document.getElementById('currentStepText');
+
+    let samplingRate = 10;
+    let quantizationLevels = 8;
+    let animationStep = 0;
+
+    function drawWave() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.strokeStyle = '#3b82f6';
+      for (let x = 0; x < canvas.width; x++) {
+        const y = Math.sin(x * 0.05) * 50 + canvas.height / 2;
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    function drawSamples() {
+      ctx.fillStyle = '#ef4444';
+      for (let x = 0; x < canvas.width; x += canvas.width / samplingRate) {
+        const y = Math.sin(x * 0.05) * 50 + canvas.height / 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawQuantization() {
+      ctx.strokeStyle = '#10b981';
+      ctx.beginPath();
+      for (let x = 0; x < canvas.width; x += canvas.width / samplingRate) {
+        const y = Math.sin(x * 0.05) * 50 + canvas.height / 2;
+        const quantizedY = Math.round(y / (canvas.height / quantizationLevels)) * (canvas.height / quantizationLevels);
+        ctx.lineTo(x, quantizedY);
+      }
+      ctx.stroke();
+    }
+
+    function drawEncoding() {
+      ctx.fillStyle = '#000';
+      ctx.font = '12px Arial';
+      for (let x = 0; x < canvas.width; x += canvas.width / samplingRate) {
+        const y = Math.sin(x * 0.05) * 50 + canvas.height / 2;
+        const quantizedY = Math.round(y / (canvas.height / quantizationLevels)) * (canvas.height / quantizationLevels);
+        const binaryValue = Math.round((quantizedY - canvas.height / 2) / (canvas.height / quantizationLevels) + quantizationLevels / 2)
+          .toString(2)
+          .padStart(Math.ceil(Math.log2(quantizationLevels)), '0');
+        ctx.fillText(binaryValue, x, canvas.height - 10);
+      }
+    }
+
+    function updateCanvas() {
+      drawWave();
+      if (animationStep > 0) drawSamples();
+      if (animationStep > 1) drawQuantization();
+      if (animationStep > 2) drawEncoding();
+    }
+
+    samplingRateSlider.addEventListener('input', (e) => {
+      samplingRate = Number(e.target.value);
+      samplingRateValue.textContent = samplingRate;
+      updateCanvas();
+    });
+
+    quantizationLevelsSlider.addEventListener('input', (e) => {
+      quantizationLevels = Number(e.target.value);
+      quantizationLevelsValue.textContent = quantizationLevels;
+      updateCanvas();
+    });
+
+    nextStepButton.addEventListener('click', () => {
+      animationStep = (animationStep + 1) % 4;
+      currentStepText.textContent = 
+        animationStep === 0 ? 'Original Signal' :
+        animationStep === 1 ? 'Sampling' :
+        animationStep === 2 ? 'Quantization' :
+        'Encoding';
+      updateCanvas();
+    });
+
+    // Initial draw
+    updateCanvas();
+  </script>
+</body>
+</html>

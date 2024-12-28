@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waveform Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="script.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        #canvas-container {
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" data-screen="dashboard">Dashboard</a>
+        <a href="#" data-screen="polar-nrz">Polar NRZ</a>
+        <a href="#" data-screen="polar-rz">Polar RZ</a>
+        <a href="#" data-screen="unipolar-nrz">Unipolar NRZ</a>
+        <a href="#" data-screen="unipolar-rz">Unipolar RZ</a>
+        <a href="#" data-screen="manchester">Manchester</a>
+        <a href="#" data-screen="biphase-manchester">Biphase Manchester</a>
+        <a href="#" data-screen="bipolar-nrz">Bipolar NRZ</a>
+        <a href="#" data-screen="bipolar-rz">Bipolar RZ</a>
+    </nav>
+
+    <div id="canvas-container">
+        <div id="dashboard" class="screen active">
+            <h2>Welcome to the Waveform Generator</h2>
+            <p>Select an encoding scheme from the navigation above to get started.</p>
+        </div>
+        
+        <div id="polar-nrz" class="screen">
+            <h2>Polar NRZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="polar-rz" class="screen">
+            <h2>Polar RZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="unipolar-nrz" class="screen">
+            <h2>Unipolar NRZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="unipolar-rz" class="screen">
+            <h2>Unipolar RZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="manchester" class="screen">
+            <h2>Manchester Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="biphase-manchester" class="screen">
+            <h2>Biphase Manchester Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="bipolar-nrz" class="screen">
+            <h2>Bipolar NRZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+        
+        <div id="bipolar-rz" class="screen">
+            <h2>Bipolar RZ Encoding</h2>
+            <input type="text" id="binary-input" placeholder="Enter binary input (0s and 1s)">
+        </div>
+    </div>
+
+    <div>
+        <label for="waveform-color">Waveform Color:</label>
+        <input type="color" id=" waveform-color" value="#000000">
+    </div>
+</body>
+</html>

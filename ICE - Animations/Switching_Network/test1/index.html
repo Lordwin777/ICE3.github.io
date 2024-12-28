@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Circuit Switching Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #toggleButton {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Types of Switching Network - Test 1</h1>
+    <div id="canvasContainer"></div>
+    <button id="toggleButton">Toggle Manual Mode</button>
+    <script>
+        let nodes = [];
+        let connections = [];
+        let pathEstablished = false;
+        let dataPackets = [];
+        let manualMode = false;
+        let currentConnection = 0;
+        let connectionTimer = 0;
+        let connectionDuration = 600; // 10 seconds at 60 fps
+        let totalDeliveredPackets = 0;
+        let totalLostPackets = 0;
+
+        function setup() {
+            let canvas = createCanvas(500, 400);
+            canvas.parent('canvasContainer');
+            
+            // Create nodes
+            nodes.push({x: 50, y: 200, label: "A"});
+            nodes.push({x: 250, y: 100, label: "B"});
+            nodes.push({x: 250, y: 300, label: "C"});
+            nodes.push({x: 450, y: 200, label: "D"});
+
+            // Define connections
+            connections.push({from: 0, to: 1, active: false});
+            connections.push({from: 1, to: 3, active: false});
+            connections.push({from: 0, to: 2, active: false});
+            connections.push({from: 2, to: 3, active: false});
+
+            // Set up toggle button
+            let toggleButton = select('#toggleButton');
+            toggleButton.mousePressed(toggleMode);
+        }
+
+        function draw() {
+            background(240);
+            
+            // Draw title
+            fill(0);
+            textAlign(CENTER, TOP);
+            textSize(20);
+            text("Advanced Circuit Switching", width/2, 10);
+            
+            // Draw connections
+            for (let conn of connections) {
+                if (conn.active) {
+                    // Glow effect for active connections
+                    strokeWeight(8);
+                    stroke(0, 255, 0, 50);
+                    line(nodes[conn.from].x, nodes[conn.from].y, nodes[conn.to].x, nodes[conn.to].y);
+                    
+                    strokeWeight(3);
+                    stroke(0, 255, 0);
+                } else {
+                    stroke(200);
+                    strokeWeight(1);
+                }
+                line(nodes[conn.from].x, nodes[conn.from].y, nodes[conn.to].x, nodes[conn.to].y);
+            }
+            
+            // Draw nodes
+            for (let node of nodes) {
+                fill(255);
+                stroke(0);
+                strokeWeight(1);
+                ellipse(node.x, node.y, 40, 40);
+                
+                // Draw node labels
+                fill(0);
+                textAlign(CENTER, CENTER);
+                textSize(16);
+                text(node.label, node.x, node.y);
+            }
+
+            // Establish path
+            if (!pathEstablished) {
+                if (!manualMode && frameCount % 60 === 0) {
+                    activateNextConnection();
+                }
+            } else {
+                // Connection timer
+                if (connectionTimer < connectionDuration) {
+                    connectionTimer++;
+                    
+                    // Generate new data packets
+                    if (frameCount % 120 === 0 && dataPackets.length < 3) {
+                        dataPackets.push({x: nodes[0].x, y: nodes[0].y, target: 1});
+                    }
+                } else {
+                    resetVisualization();
+                }
+            }
+
+            // Move data packets
+            for (let i = dataPackets.length - 1; i >= 0; i--) {
+                let packet = dataPackets[i];
+                
+                // Data packet loss simulation
+                if (random(1) < 0.01) { // 1% chance of packet loss
+                    dataPackets.splice(i, 1);
+                    totalLostPackets++;
+                    continue;
+                }
+                
+                // Draw packet with trail effect
+                for (let j = 0; j < 5; j++) {
+                    fill(0, 0, 255, 50 - j * 10);
+                    noStroke();
+                    ellipse(packet.x, packet.y, 15 - j * 2, 15 - j * 2);
+                }
+
+                let targetNode = nodes[packet.target];
+                packet.x = lerp(packet.x, targetNode.x, 0.05);
+                packet.y = lerp(packet.y, targetNode.y, 0.05);
+
+                if (dist(packet.x, packet.y, targetNode.x, targetNode.y) < 5) {
+                    if (packet.target === 3) {
+                        dataPackets.splice(i, 1);
+                        totalDeliveredPackets++;
+                    } else {
+                        packet.target++;
+                    }
+                }
+            }
+
+            // Display real-time metrics
+            fill(0);
+            textAlign(LEFT, TOP);
+            textSize(14);
+            text(`Connection Time: ${floor(connectionTimer / 60)}s`, 10, height - 80);
+            text(`Active Connections: ${currentConnection}`, 10, height - 60);
+            text(`Packets Delivered: ${totalDeliveredPackets}`, 10, height - 40);
+            text(`Packets Lost: ${totalLostPackets}`, 10, height - 20);
+        }
+
+        function mousePressed() {
+            if (manualMode && !pathEstablished) {
+                activateNextConnection();
+            } else if (!manualMode) {
+                resetVisualization();
+            }
+        }
+
+        function activateNextConnection() {
+            if (currentConnection < connections.length) {
+                connections[currentConnection].active = true;
+                currentConnection++;
+                if (currentConnection === connections.length) {
+                    pathEstablished = true;
+                }
+            }
+        }
+
+        function resetVisualization() {
+            pathEstablished = false;
+            dataPackets = [];
+            currentConnection = 0;
+            connectionTimer = 0;
+            for (let conn of connections) {
+                conn.active = false;
+            }
+        }
+
+        function toggleMode() {
+            manualMode = !manualMode;
+            resetVisualization();
+            select('#toggleButton').html(manualMode ? 'Toggle Automatic Mode' : 'Toggle Manual Mode');
+        }
+    </script>
+
+    <footer>
+        <p>&copy;By Lordwin </p>
+    </footer>
+    
+</body>
+</html>

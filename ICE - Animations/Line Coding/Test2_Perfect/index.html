@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Coding Visualization</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --text-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .global-input {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .global-input input {
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .encoding-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .encoding-panel {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .encoding-panel h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .sketch-holder {
+            width: 100%;
+            height: 250px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .encoding-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Line Coding Visualization</h1>
+        </div>
+
+        <div class="global-input">
+            <input type="text" 
+                   id="global-binary-input" 
+                   placeholder="Enter Binary Sequence (0s and 1s)" 
+                   maxlength="16" 
+                   value="10110011">
+        </div>
+
+        <div class="encoding-grid" id="encoding-container">
+            <!-- Encoding panels will be dynamically generated here -->
+        </div>
+    </div>
+
+    <script>
+        // Encoding Configurations
+        const ENCODING_TYPES = [
+            {
+                id: 'polar-nrz',
+                name: 'Polar NRZ',
+                description: 'Non-Return to Zero Polar Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 ? yCenter - 50 : yCenter + 50
+            },
+            {
+                id: 'polar-rz',
+                name: 'Polar RZ',
+                description: 'Polar Return to Zero Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 
+                        ? (x % bitWidth < bitWidth / 2 ? yCenter - 50 : yCenter) 
+                        : yCenter
+            },
+            {
+                id: 'unipolar-nrz',
+                name: 'Unipolar NRZ',
+                description: 'Unipolar Non-Return to Zero Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 ? yCenter - 50 : yCenter
+            },
+            {
+                id: 'unipolar-rz',
+                name: 'Unipolar RZ',
+                description: 'Unipolar Return to Zero Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 
+                        ? (x % bitWidth < bitWidth / 2 ? yCenter - 50 : yCenter) 
+                        : yCenter
+            },
+            {
+                id: 'manchester',
+                name: 'Manchester',
+                description: 'Manchester Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 
+                        ? (x % bitWidth < bitWidth / 2 ? yCenter - 50 : yCenter + 50) 
+                        : (x % bitWidth < bitWidth / 2 ? yCenter + 50 : yCenter - 50)
+            },
+            {
+                id: 'differential-manchester',
+                name: 'Differential Manchester',
+                description: 'Differential Manchester Encoding',
+                encode: (bit, yCenter, bitWidth, x, lastState) => {
+                    if (bit === 0) {
+                        return lastState === (yCenter - 50) ? (yCenter + 50) : (yCenter - 50);
+                    }
+                    return (x % bitWidth < bitWidth / 2) ? (yCenter + 50) : (yCenter - 50);
+                }
+            },
+            {
+                id: 'bipolar-nrz',
+                name: 'Bipolar NRZ',
+                description: 'Bipolar Non-Return to Zero Encoding',
+                encode: (bit, yCenter, bitWidth, x, lastState) => {
+                    if (bit === 1) {
+                        return lastState === (yCenter - 50) ? (yCenter + 50) : (yCenter - 50);
+                    }
+                    return yCenter;
+                }
+            },
+            {
+                id: 'bipolar-rz',
+                name: 'Bipolar RZ',
+                description: 'Bipolar Return to Zero Encoding',
+                encode: (bit, yCenter, bitWidth, x) => 
+                    bit === 1 
+                        ? (x % bitWidth < bitWidth / 2 ? (yCenter - 50) : yCenter) 
+                        : yCenter
+            }
+        ];
+
+        // Sketches will be stored here to update dynamically
+        const sketches = {};
+
+        // Create encoding panels
+        function createEncodingPanels() {
+            const container = document.getElementById('encoding-container');
+            
+            ENCODING_TYPES.forEach((encoding) => {
+                const panel = document.createElement('div');
+                panel.className = 'encoding-panel';
+                panel.innerHTML = `
+                    <h2>${encoding.name}</h2>
+                    <div id="sketch-${encoding.id}" class="sketch-holder"></div>
+                `;
+                container.appendChild(panel);
+
+                // Create p5.js sketch for each encoding
+                sketches[encoding.id] = new p5(function(p) {
+                    let bitSequence = [1,0,1,1,0,0,1,1];
+                    let animationOffset = 0;
+                    let lastState = null;
+
+                    p.setup = function() {
+                        const sketcher = p.select(`#sketch-${encoding.id}`);
+                        const canvasWidth = sketcher.width;
+                        const canvasHeight = sketcher .height;
+                        p.createCanvas(canvasWidth, canvasHeight);
+                        p.frameRate(30);
+                    }
+
+                    p.draw = function() {
+                        p.background(255); 
+                        const bitWidth = 50;
+                        const yCenter = p.height / 2;
+
+                        // Draw x and y axes
+                        p.stroke(200);
+                        p.line(0, yCenter, p.width, yCenter);
+
+                        // Draw waveform
+                        p.noFill();
+                        p.stroke(0, 0, 255);
+                        p.beginShape();
+
+                        for (let x = 0; x < p.width; x++) {
+                            const bitIndex = Math.floor((x + animationOffset) / bitWidth);
+                            const bit = bitSequence[bitIndex % bitSequence.length];
+                            const withinBit = (x + animationOffset) % bitWidth;
+
+                            let y;
+                            if (encoding.id === 'differential-manchester') {
+                                y = encoding.encode(bit, yCenter, bitWidth, withinBit, lastState);
+                                lastState = y;
+                            } else {
+                                y = encoding.encode(bit, yCenter, bitWidth, withinBit);
+                            }
+
+                            p.vertex(x, y);
+                        }
+
+                        p.endShape();
+
+                        // Update animation offset
+                        animationOffset = (animationOffset + 1) % bitWidth;
+
+                        // Display bit sequence
+                        p.textSize(12);
+                        p.textAlign(p.CENTER, p.CENTER);
+                        for (let i = 0; i < bitSequence.length; i++) {
+                            p.fill(0);
+                            p.text(bitSequence[i], i * bitWidth + bitWidth / 2, 20);
+                        }
+                    };
+
+                    // Function to update the bit sequence
+                    const updateBitSequence = (input) => {
+                        const isValid = /^[01]{1,16}$/.test(input);
+                        if (isValid) {
+                            bitSequence = input.split('').map(bit => parseInt(bit));
+                        } else {
+                            bitSequence = [1, 0, 1, 1, 0, 0, 1, 1]; // Default sequence
+                        }
+                    };
+
+                    // Listen for global input changes
+                    document.getElementById('global-binary-input').addEventListener('input', (e) => {
+                        updateBitSequence(e.target.value);
+                    });
+                }, `sketch-${encoding.id}`);
+            });
+        }
+
+        // Initialize the panels on load
+        window.onload = createEncodingPanels;
+    </script>
+</body>
+</html>

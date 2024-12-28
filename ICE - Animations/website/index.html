@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive ICE Page</title>
+    <!-- p5.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <!-- Anime.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0d1117; /* Dark background */
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .main-content {
+            text-align: center;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gradient-text {
+            font-size: 80px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #8ab4f8, #7f00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        #explore {
+            display: inline-block;
+            width: 300px;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+            background: #0078ff;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #explore:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 120, 255, 0.5);
+        }
+
+        .topics-section {
+            min-height: 100vh;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .topic-button {
+            width: 300px;
+            height: 60px;
+            background: linear-gradient(90deg, #8ab4f8, #7f00ff);
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .topic-button:hover {
+            box-shadow: 0 6px 20px rgba(127, 0, 255, 0.5);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas for Animated Particles -->
+    <div class="canvas-container">
+        <script>
+            let particles = [];
+            function setup() {
+                createCanvas(window.innerWidth, window.innerHeight);
+                for (let i = 0; i < 100; i++) {
+                    particles.push({
+                        x: random(width),
+                        y: random(height),
+                        r: random(2, 4),
+                        dx: random(-1, 1),
+                        dy: random(-1, 1)
+                    });
+                }
+            }
+
+            function draw() {
+                background(13, 17, 23, 100);
+                noStroke();
+                fill(255, 255, 255, 150);
+                particles.forEach((p) => {
+                    circle(p.x, p.y, p.r);
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    if (p.x < 0 || p.x > width) p.dx *= -1;
+                    if (p.y < 0 || p.y > height) p.dy *= -1;
+                });
+            }
+
+            function windowResized() {
+                resizeCanvas(window.innerWidth, window.innerHeight);
+            }
+        </script>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="gradient-text" id="title">ICE IA</div>
+        <div id="explore">Explore Topics</div>
+    </div>
+
+    <!-- Topics Section -->
+    <div class="topics-section" id="topics-section" style="display: none;">
+        <button class="topic-button" id="button1">Characteristics comparison of line codes</button>
+        <button class="topic-button" id="button2">PCM</button>
+        <button class="topic-button" id="button3">Visualizers for Radio receiver chapters</button>
+        <button class="topic-button" id="button4">Types of Switching network</button>
+        <button class="topic-button" id="button5">THSS</button>
+        <button class="topic-button" id="button6">Topologies</button>
+    </div>
+
+    <script>
+        // Animate the "Explore Topics" button click
+        document.getElementById("explore").addEventListener("click", () => {
+            const topicsSection = document.getElementById("topics-section");
+            topicsSection.style.display = "flex";
+
+            // Smooth scroll to topics section
+            anime({
+                targets: "html, body",
+                scrollTop: topicsSection.offsetTop,
+                duration: 800,
+                easing: "easeInOutQuad",
+                complete: () => {
+                    // Animate each topic button with staggered effects
+                    anime({
+                        targets: ".topic-button",
+                        opacity: [0, 1],
+                        translateY: [30, 0],
+                        duration: 800,
+                        delay: anime.stagger(200),
+                        easing: "easeOutCubic"
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

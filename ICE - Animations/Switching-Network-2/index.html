@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Switching Explained</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Circuit Switching</h1>
+        <p class="definition">Circuit switching is a connection-oriented network that establishes a dedicated path between the sender and receiver, providing a guaranteed data rate.</p>
+        
+        <h2>Examples</h2>
+        <ul>
+            <li>Analog telephone network</li>
+            <li>Optical mesh network</li>
+            <li>Public Switched Telephone Network (PSTN)</li>
+        </ul>
+
+        <h2>Phases of Circuit Switching</h2>
+        <div class="phases">
+            <h3>Circuit Establishment</h3>
+            <p>A circuit-switched network consists of a set of switches connected by physical links. A connection between two stations is a dedicated path made of one or more links. However, each connection uses only one dedicated channel on each link. Each link is normally divided into n channels by using FDM or TDM.
+                .</p>
+                
+            <h3>Data Transfer</h3>
+            <p>Data and voice signals are transferred once the circuit is established.</p>
+            <h3>Circuit Disconnection</h3>
+            <p>The circuit is disconnected when one user initiates the disconnection.</p>
+        </div>
+
+        <h2>Characteristics</h2>
+        <ul>
+            <li>Connection-oriented process</li>
+            <li>Fixed amount of data transferred</li>
+            <li>Termination occurs when the connection ends</li>
+        </ul>
+
+        <h2>Advantages</h2>
+        <ul>
+            <li>Steady communication rate</li>
+            <li>No intermediate delays</li>
+        </ul>
+
+        <h2>Disadvantages</h2>
+        <ul>
+            <li>Underutilization of resources</li>
+            <li>High establishment time</li>
+        </ul>
+
+        <h2>Types of Switches</h2>
+        <ul>
+            <li>Space Division Switches</li>
+            <li>Time-Division Switches</li>
+        </ul>
+    </div>
+    <div id="canvas-container"></div>
+    <script src="script.js" defer></script>
+</body>
+</html>

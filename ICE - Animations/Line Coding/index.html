@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Coding Animation (16-bit)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="sketch-holder"></div>
+    <div class="controls">
+        <label for="encoding-select">Select Encoding:</label>
+        <select id="encoding-select">
+            <option value="polar-nrz">Polar NRZ</option>
+            <option value="polar-rz">Polar RZ</option>
+            <option value="unipolar-nrz">Unipolar NRZ</option>
+            <option value="unipolar-rz">Unipolar RZ</option>
+            <option value="manchester">Manchester</option>
+            <option value="biphase-manchester">Biphase Manchester</option>
+            <option value="bipolar-nrz">Bipolar NRZ</option>
+            <option value="bipolar-rz">Bipolar RZ</option>
+        </select>
+        <!-- Compare button -->
+<button id="compare-button" style="position: absolute; top: 10px; left: 10px;">Compare</button>
+
+<!-- Left canvas for original waveform -->
+<div id="left-canvas">
+    <div id="sketch-holder"></div>
+</div>
+
+<!-- Right canvas for comparison waveform, initially hidden -->
+<div id="right-canvas" style="display: none;">
+    <div id="compare-sketch-holder"></div>
+</div>
+
+        <label for="speed-input">Animation Speed:</label>
+        <input type="range" id="speed-input" min="0.1" max="2" step="0.1" value="1">
+        
+        <label for="binary-input">Enter Binary Sequence (up to 16 bits):</label>
+        <input type="text" id="binary-input" placeholder="Enter 0s and 1s (max 16 bits)" maxlength="16">
+        <div id="input-error">Invalid input! Enter only 0s and 1s.</div>
+
+        <button id="play-pause-button">Pause</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
